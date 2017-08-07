@@ -1,0 +1,1 @@
+wcpsq_plugin_activated_welcome.php

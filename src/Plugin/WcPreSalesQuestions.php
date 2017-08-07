@@ -12,10 +12,15 @@ use WcPreSalesQuestions\Settings\WcPreSalesQuestionsSettings;
  */
 class WcPreSalesQuestions {
 
+	private $settings;
+
 	public function __construct() {
 
 		// init the settings page for the plugin
 		// new WcPreSalesQuestionsSettings();
+
+		// get all the saved settings from the database
+		// $this->settings =
 
 		// add new Pre sales questions tab based on options
 		add_filter( 'woocommerce_product_tabs', array( $this, 'wc_psq_tabs' ) );
@@ -26,6 +31,10 @@ class WcPreSalesQuestions {
 		 * between 20 and 40, so we will hook the press sales question form in order: 25
 		 */
 		add_action( 'woocommerce_single_product_summary', array( $this, 'wc_psq_form' ), 25 );
+
+		// add pre sales questions exit intent forms to checkout and cart pages
+		add_action( 'woocommerce_after_cart', array( $this, 'wc_psq_exit_form' ) );
+		add_action( 'woocommerce_after_checkout_form', array( $this, 'wc_psq_exit_form' ) );
 
 		// called only after woocommerce has finished loading
 		add_action( 'woocommerce_init', array( $this, 'woocommerce_loaded' ) );
@@ -92,6 +101,14 @@ class WcPreSalesQuestions {
 		if ( $product ) {
 			$this->wc_psq_render_form();
 		}
+	}
+
+	function wc_psq_exit_form() {
+
+		// get the current cart
+		$cart = WC()->cart->get_cart();
+
+
 	}
 
 	/**

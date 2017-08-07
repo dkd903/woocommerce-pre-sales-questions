@@ -10,6 +10,9 @@ namespace WcPreSalesQuestions\Plugin;
  */
 class WcPreSalesQuestionsSettings {
 
+	// TODO:you should add this exit intent to your pricing page as well
+	// choose your pricing page
+
 	public $extensions;
 
 	/**
@@ -28,28 +31,29 @@ class WcPreSalesQuestionsSettings {
 	 * Add the necessary hooks and filters for admin
 	 */
 	function init() {
-		// settings page
-		add_action( 'admin_menu', array( $this, 'wpfomo_menu' ) );
 
 		// admin notices
 		add_action( 'admin_notices', array( $this, 'dashboard_notices' ) );
 
 		// dismiss welcome notice ajax
-		add_action( 'wp_ajax_' . WPFOMO_SLUG . '_dismiss_dashboard_notices', array( $this, 'dismiss_dashboard_notices' ) );
+		add_action( 'wp_ajax_' . WCPSQ_SLUG . '_dismiss_dashboard_notices', array( $this, 'dismiss_dashboard_notices' ) );
 
 		// Add settings link in plugin list
-		add_filter( 'plugin_action_links_' . plugin_basename( WPFOMO_PATH ), array( $this, 'settings_link' ) );
+		add_filter( 'plugin_action_links_' . plugin_basename( WCPSQ_PATH ), array( $this, 'settings_link' ) );
+
+		// settings page
+		add_action( 'admin_menu', array( $this, 'menu' ) );
 	}
 
 	/**
 	 * Add the options page
 	 */
-	function wpfomo_menu() {
+	function menu() {
 		add_options_page(
-			WPFOMO_PLUGIN_NAME,
-			WPFOMO_PLUGIN_NAME,
+			WCPSQ_PLUGIN_NAME,
+			WCPSQ_PLUGIN_NAME,
 			'manage_options',
-			WPFOMO_SLUG,
+			WCPSQ_SLUG,
 			array(
 				$this,
 				'settings_page'
@@ -59,7 +63,7 @@ class WcPreSalesQuestionsSettings {
 
 	function settings_page() {
 		// check nonce to process form data
-		if ( isset( $_REQUEST['_wpnonce'] ) && wp_verify_nonce( $_REQUEST['_wpnonce'], 'wpfomo-settings-nonce' ) ) {
+		if ( isset( $_REQUEST['_wpnonce'] ) && wp_verify_nonce( $_REQUEST['_wpnonce'], 'wcpsq-settings-nonce' ) ) {
 			// check if form submitted
 			if ( isset( $_REQUEST['submit'] ) ) {
 				// check if all fields filled
@@ -88,19 +92,14 @@ class WcPreSalesQuestionsSettings {
 							'_view_optin_on' => sanitize_text_field( $_REQUEST['_view_optin_on'] ),
 							'_view_optin_user' => sanitize_text_field( $_REQUEST['_view_optin_user'] )
 					);
-					update_option( WPFOMO_SLUG, $settings );
-
-					// update actions for extensions
-					foreach ( $this->extensions as $extension ) {
-						do_action( 'wp_fomo_magic_update_settings_' . $extension->name );
-					}
+					update_option( WCPSQ_SLUG, $settings );
 
 				}
 			}
 		}
 
 		// get the settings
-		$settings = get_option( WPFOMO_SLUG );
+		$settings = get_option( WCPSQ_SLUG );
 
 		$all_posts = array();
 		// get the posts and pages
@@ -110,7 +109,7 @@ class WcPreSalesQuestionsSettings {
 		}
 
 		// load the template
-		require WPFOMO_DIR_PATH . 'views/wp_fomo_settings.php';
+		require WCPSQ_DIR_PATH . 'views/wc_psq_settings.php';
 	}
 
 	/**
@@ -119,31 +118,31 @@ class WcPreSalesQuestionsSettings {
 	function dashboard_notices() {
 		global $pagenow;
 
-		if ( !get_option( WPFOMO_SLUG . '_welcome' ) ) {
-			if ( ! ( $pagenow == 'options-general.php' && isset( $_GET['page'] ) && $_GET['page'] == WPFOMO_SLUG ) ) {
-				$setting_page = admin_url( 'options-general.php?page=' . WPFOMO_SLUG );
+		if ( !get_option( WCPSQ_SLUG . '_welcome' ) ) {
+			if ( ! ( $pagenow == 'options-general.php' && isset( $_GET['page'] ) && $_GET['page'] == WCPSQ_SLUG ) ) {
+				$setting_page = admin_url( 'options-general.php?page=' . WCPSQ_SLUG );
 				$ajax_url = admin_url( 'admin-ajax.php' );
 				// load the notices view
-				include WPFOMO_DIR_PATH . 'views/wp_fomo_activate_plugin_welcome.php';
+				include WCPSQ_DIR_PATH . 'views/wc_psq_plugin_activated_welcome.php';
 			}
 		}
 	}
 
     /**
-     * Dismiss the welcome notice for the plugin
+     * Dismiss the settings nod welcome notice for this plugin
      */
     function dismiss_dashboard_notices() {
-    	check_ajax_referer( WPFOMO_SLUG . '-nonce', 'nonce' );
+    	check_ajax_referer( WCPSQ_SLUG . '-nonce', 'nonce' );
         // user has dismissed the welcome notice
-        update_option( WPFOMO_SLUG . '_welcome', 1 );
+        update_option( WCPSQ_SLUG . '_welcome', 1 );
         exit;
     }
 
 	/**
-	 * Adds a settings link to the WP PLugin listing page
+	 * Add a link to the settings page to the WP PLugin listing page
 	 */
 	function settings_link( $links ) {
-		$settings_link = '<a href="' . esc_url( admin_url( 'options-general.php?page=' . WPFOMO_SLUG ) ) . '">' . esc_html__( 'Settings' ) . '</a>';
+		$settings_link = '<a href="' . esc_url( admin_url( 'options-general.php?page=' . WCPSQ_SLUG ) ) . '">' . esc_html__( 'Settings' ) . '</a>';
 		array_push( $links, $settings_link );
 		return $links;
 	}
