@@ -2,7 +2,7 @@
 
 namespace WcPreSalesQuestions\Plugin;
 
-use WcPreSalesQuestions\Settings\WcPreSalesQuestionsSettings;
+use WcPreSalesQuestions\Plugin\WcPreSalesQuestionsSettings;
 
 /**
  * The main plugin class.
@@ -20,7 +20,7 @@ class WcPreSalesQuestions {
 		// new WcPreSalesQuestionsSettings();
 
 		// get all the saved settings from the database
-		// $this->settings =
+		$this->settings = new WcPreSalesQuestionsSettings();
 
 		// add new Pre sales questions tab based on options
 		add_filter( 'woocommerce_product_tabs', array( $this, 'wc_psq_tabs' ) );

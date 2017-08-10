@@ -43,27 +43,38 @@ class WcPreSalesQuestionsSettings {
 
 		// settings page
 		add_action( 'admin_menu', array( $this, 'menu' ) );
+		
+		// enqueue styles
+		add_action( 'admin_enqueue_scripts', array( $this, 'custom_admin_style' ) );		
 	}
 
+	/**
+	 * Enqueue custom stylesheets in the WordPress admin.
+	 */
+	function custom_admin_style() {
+        wp_enqueue_style( WCPSQ_SLUG . '_admin', WCPSQ_DIR_URL . 'assets/css/admin-style.css', array(), WCPSQ_VERSION );
+	}
+	
 	/**
 	 * Add the options page
 	 */
 	function menu() {
-		add_options_page(
-			WCPSQ_PLUGIN_NAME,
-			WCPSQ_PLUGIN_NAME,
-			'manage_options',
-			WCPSQ_SLUG,
+		add_submenu_page( 
+			'woocommerce', 
+			WCPSQ_PLUGIN_NAME_BASE, 
+			WCPSQ_PLUGIN_NAME_BASE, 
+			'manage_options', 
+			WCPSQ_SLUG, 
 			array(
 				$this,
 				'settings_page'
-			)
+			) 
 		);
 	}
 
 	function settings_page() {
 		// check nonce to process form data
-		if ( isset( $_REQUEST['_wpnonce'] ) && wp_verify_nonce( $_REQUEST['_wpnonce'], 'wcpsq-settings-nonce' ) ) {
+		if ( isset( $_REQUEST['_wpnonce'] ) && wp_verify_nonce( $_REQUEST['_wpnonce'], WCPSQ_SLUG . '-settings-nonce' ) ) {
 			// check if form submitted
 			if ( isset( $_REQUEST['submit'] ) ) {
 				// check if all fields filled
@@ -119,8 +130,8 @@ class WcPreSalesQuestionsSettings {
 		global $pagenow;
 
 		if ( !get_option( WCPSQ_SLUG . '_welcome' ) ) {
-			if ( ! ( $pagenow == 'options-general.php' && isset( $_GET['page'] ) && $_GET['page'] == WCPSQ_SLUG ) ) {
-				$setting_page = admin_url( 'options-general.php?page=' . WCPSQ_SLUG );
+			if ( ! ( $pagenow == 'admin.php' && isset( $_GET['page'] ) && $_GET['page'] == WCPSQ_SLUG ) ) {
+				$setting_page = admin_url( 'admin.php?page=' . WCPSQ_SLUG );
 				$ajax_url = admin_url( 'admin-ajax.php' );
 				// load the notices view
 				include WCPSQ_DIR_PATH . 'views/wc_psq_plugin_activated_welcome.php';

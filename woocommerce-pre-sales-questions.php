@@ -23,11 +23,12 @@ if ( in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', g
 
 	// common plugin defines
 	define( 'WCPSQ_DIR', dirname( plugin_basename( __FILE__ ) ) );
-	define( 'WCPSQ_DOMAIN', 'wc_psq' );
 	define( 'WCPSQ_DIR_PATH', plugin_dir_path( __FILE__ ) );
-	define( 'WCPSQ_PATH', __FILE__ );
-	define( 'WCPSQ_PLUGIN_NAME' , 'WooCommerce Pre-Sales Questions' );
+	define( 'WCPSQ_DIR_URL', plugin_dir_url( __FILE__ ) );
+	define( 'WCPSQ_PLUGIN_NAME_BASE' , 'Pre-Sales Questions' );
+	define(	'WCPSQ_PLUGIN_NAME', 'WooCommerce ' . WCPSQ_PLUGIN_NAME_BASE );
 	define( 'WCPSQ_SLUG' , 'wcpsq' );
+	define( 'WCPSQ_DOMAIN', 'wcpsq' );
 	define( 'WCPSQ_VERSION' , '1.0.1' );
 
 	// Localization
