@@ -5,11 +5,7 @@
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly
-}
-
-global $product;
-
-if ( ! empty( $product ) ): ?>
+} ?>
 
 <div class="wcpsq-container">
 	<form action="">
@@ -29,4 +25,3 @@ if ( ! empty( $product ) ): ?>
 		<button type="submit">Submit</button>
 	</form>
 </div>
-<?php endif;

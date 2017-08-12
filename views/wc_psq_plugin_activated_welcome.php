@@ -1,7 +1,6 @@
 <div class="notice notice-success is-dismissible <?php echo WCPSQ_SLUG; ?>-notice-welcome">
 	<p>
 		<?php
-			/* translators: 1: WordPress version number, 2: plural number of bugs. */
 			printf( __( 'Thanks for installing %1$s. <a href="%2$s">Click here</a> to configure the plugin.', WCPSQ_DOMAIN ), WCPSQ_PLUGIN_NAME, esc_url( $setting_page ) ); 
 		?>
 	</p>

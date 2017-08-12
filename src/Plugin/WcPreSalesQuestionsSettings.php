@@ -76,32 +76,18 @@ class WcPreSalesQuestionsSettings {
 		// check nonce to process form data
 		if ( isset( $_REQUEST['_wpnonce'] ) && wp_verify_nonce( $_REQUEST['_wpnonce'], WCPSQ_SLUG . '-settings-nonce' ) ) {
 			// check if form submitted
-			if ( isset( $_REQUEST['submit'] ) ) {
+			if ( isset( $_REQUEST['submit'] ) && ! empty( $_REQUEST['action'] ) ) {
 				// check if all fields filled
-				if ( isset( $_REQUEST['_sfa'] ) && !empty( $_REQUEST['_sfa'] ) &&
-					 isset( $_REQUEST['_ha'] ) && !empty( $_REQUEST['_ha'] ) &&
-					  isset( $_REQUEST['_ii'] ) && !empty( $_REQUEST['_ii'] ) &&
-					   isset( $_REQUEST['_ps'] ) && !empty( $_REQUEST['_ps'] ) &&
-					    isset( $_REQUEST['_ph'] ) && !empty( $_REQUEST['_ph'] ) &&
-					     isset( $_REQUEST['_ph'] ) && !empty( $_REQUEST['_ph'] ) &&
-					     isset( $_REQUEST['_rn'] ) && !empty( $_REQUEST['_rn'] ) ) {
-
-					// process the select2 values
-					$_REQUEST['_view_optin_not_on'] = implode( ',', array_unique( explode( ',', $_REQUEST['_view_optin_not_on'] ) ) );
-					$_REQUEST['_view_optin_on'] = implode( ',', array_unique( explode( ',', $_REQUEST['_view_optin_on'] ) ) );
+				if ( isset( $_REQUEST['_sop'] ) && !empty( $_REQUEST['_sop'] ) &&
+					 isset( $_REQUEST['_sopw'] ) && !empty( $_REQUEST['_sopw'] ) &&
+					  isset( $_REQUEST['_socc'] ) && !empty( $_REQUEST['_socc'] ) ) {
 
 					//update_option
 					$settings = array(
-							'_sfa' => sanitize_text_field( $_REQUEST['_sfa'] ),
-							'_ha' => sanitize_text_field( $_REQUEST['_ha'] ),
-							'_ii' => sanitize_text_field( $_REQUEST['_ii'] ),
-							'_ps' => sanitize_text_field( $_REQUEST['_ps'] ),
-							'_ph' => sanitize_text_field( $_REQUEST['_ph'] ),
-							'_pv' => sanitize_text_field( $_REQUEST['_pv'] ),
-							'_rn' => sanitize_text_field( $_REQUEST['_rn'] ),
-							'_view_optin_not_on' => sanitize_text_field( $_REQUEST['_view_optin_not_on'] ),
-							'_view_optin_on' => sanitize_text_field( $_REQUEST['_view_optin_on'] ),
-							'_view_optin_user' => sanitize_text_field( $_REQUEST['_view_optin_user'] )
+							'_sop' => sanitize_text_field( $_REQUEST['_sop'] ),
+							'_sopw' => sanitize_text_field( $_REQUEST['_sopw'] ),
+							'_socc' => sanitize_text_field( $_REQUEST['_socc'] ),
+							'_psq_form_title' => sanitize_text_field( $_REQUEST['_psq_form_title'] )
 					);
 					update_option( WCPSQ_SLUG, $settings );
 
@@ -114,8 +100,12 @@ class WcPreSalesQuestionsSettings {
 
 		$all_posts = array();
 		// get the posts and pages
-		$posts = get_posts( array( 'numberposts' => -1, 'post_status' => 'publish', 'post_type' => array( 'post', 'page' ) ) );
+		$posts = get_posts( array( 'numberposts' => -1, 'post_status' => 'publish', 'post_type' => 'page' ) );
 		foreach( $posts as $post ) {
+			if ( 'checkout' == strtolower( $post->post_title ) || 'cart' == strtolower( $post->post_title ) ) {
+				continue;	
+			}
+			// if ( $post->content ) contains [woocommerce_cart] or [woocommerce_checkout]
 			$all_posts[$post->ID] = $post->post_title;
 		}
 

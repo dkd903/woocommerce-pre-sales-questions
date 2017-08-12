@@ -23,18 +23,28 @@ class WcPreSalesQuestions {
 		$this->settings = new WcPreSalesQuestionsSettings();
 
 		// add new Pre sales questions tab based on options
-		add_filter( 'woocommerce_product_tabs', array( $this, 'wc_psq_tabs' ) );
+		if ( $this->wc_psq_show_here( 'tab' ) ) {
+			add_filter( 'woocommerce_product_tabs', array( $this, 'wc_psq_form_tabs' ) );
+		}
 
 		/**
 		 * add pre sales question form to the product description area
 		 * NOTE: meta and excerpt hook into woocommerce_single_product_summary
 		 * between 20 and 40, so we will hook the press sales question form in order: 25
 		 */
-		add_action( 'woocommerce_single_product_summary', array( $this, 'wc_psq_form' ), 25 );
+		if ( $this->wc_psq_show_here( 'summary' ) ) {
+			add_action( 'woocommerce_single_product_summary', array( $this, 'wc_psq_form_summary' ), 25 );
+		}
 
-		// add pre sales questions exit intent forms to checkout and cart pages
-		add_action( 'woocommerce_after_cart', array( $this, 'wc_psq_exit_form' ) );
-		add_action( 'woocommerce_after_checkout_form', array( $this, 'wc_psq_exit_form' ) );
+		// add pre sales questions exit intent form to the cart page
+		if ( $this->wc_psq_show_here( 'cart' ) ) {
+			add_action( 'woocommerce_after_cart', array( $this, 'wc_psq_exit_form' ) );
+		}
+		
+		// add pre sales questions exit intent form to the checkout page
+		if ( $this->wc_psq_show_here( 'checkout' ) ) {
+			add_action( 'woocommerce_after_checkout_form', array( $this, 'wc_psq_exit_form' ) );
+		}
 
 		// called only after woocommerce has finished loading
 		add_action( 'woocommerce_init', array( $this, 'woocommerce_loaded' ) );
@@ -76,7 +86,7 @@ class WcPreSalesQuestions {
 	 * @param array $tabs
 	 * @return array
 	 */
-	function wc_psq_tabs( $tabs = array() ) {
+	function wc_psq_form_tabs( $tabs = array() ) {
 		global $product, $post;
 
 		// Presales questions tab
@@ -92,9 +102,9 @@ class WcPreSalesQuestions {
 	}
 
 	/**
-	 * Add Pre-Sales questions form below the product description
+	 * Add Pre-Sales questions form below the product summary
 	 */
-	function wc_psq_form() {
+	function wc_psq_form_summary() {
 		global $product, $post;
 
 		// render Presales questions form
@@ -103,11 +113,17 @@ class WcPreSalesQuestions {
 		}
 	}
 
+
+	/**
+	 * Add Pre-Sales questions form to the cart page or the checkout page
+	 */
 	function wc_psq_exit_form() {
 
-		// get the current cart
+		// get the current cart contents
 		$cart = WC()->cart->get_cart();
-
+		
+		// print the form
+		$this->wc_psq_render_form();
 
 	}
 
@@ -116,5 +132,73 @@ class WcPreSalesQuestions {
 	 */
 	function wc_psq_render_form() {
 		require( WCPSQ_DIR_PATH . 'views/wc_psq_tab_form.php' );
+	}
+	
+	/**
+	 * Checks whether or not the form should be rendered in the given area
+	 * 
+	 * @param $area String Name of the area
+	 * @return Boolean
+	 */
+	function wc_psq_show_here( $area = '' ) {
+		
+		if ( empty( $area ) ) {
+			return false;
+		}
+		
+		// get the settings
+		$settings = get_option( WCPSQ_SLUG );
+		
+		// check if it is the product page
+		if ( 'tab' == $area || 'summary' == $area ) {
+			
+			// check if the 'show on product page' setting is set to yes
+			if ( ! empty( $settings['_sop'] ) ) {
+			
+				// check if the 'show on product page' setting is set to yes
+				if ( 'yes' == $settings['_sop'] ) {
+				
+					// check if the setting is not empty
+					if ( ! empty( $settings['_sopw'] ) ) {
+					
+						// check if the area queried for and the area stored in settings 'show on product page where' are same	
+						if ( 'psf' . $area == $settings['_sopw'] ) {
+							return true;
+						}
+					} 
+					else {
+						
+						// if the setting is not available, show psq form in tab area (defaults)
+						if ( 'tab' == $area ) {
+							return true;
+						}
+					}
+				}
+			}	
+			
+		} else if ( 'cart' == $area  || 'checkout' == $area ) {
+			
+			// return true if setting 'show_on_cart_checkout' is not available and area is cart
+			if ( empty( $setting['_socc'] ) && 'cart' == $area ) {
+				return true;
+			}
+			
+			// check if the setting 'show_on_cart_checkout' is not empty
+			if ( ! empty( $setting['_socc'] ) ) {
+				
+				// get the areas from setting
+				$areas_from_setting = explode( '::', $setting['_socc'] );
+				
+				// check if passed area exists in the setting
+				if ( in_array( $area, $areas_from_setting ) ) {
+					return true;
+				}
+			}
+			
+		}
+		
+		// return false by default
+		return false;
+		
 	}
 }
