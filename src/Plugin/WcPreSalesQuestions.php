@@ -17,8 +17,6 @@ class WcPreSalesQuestions {
 	public function __construct() {
 
 		// init the settings page for the plugin
-		// new WcPreSalesQuestionsSettings();
-
 		// get all the saved settings from the database
 		$this->settings = new WcPreSalesQuestionsSettings();
 
@@ -46,30 +44,13 @@ class WcPreSalesQuestions {
 			add_action( 'woocommerce_after_checkout_form', array( $this, 'wc_psq_exit_form' ) );
 		}
 
-		// called only after woocommerce has finished loading
-		add_action( 'woocommerce_init', array( $this, 'woocommerce_loaded' ) );
-
-		// called after all plugins have loaded
-		add_action( 'plugins_loaded', array( $this, 'plugins_loaded' ) );
-
 		// called just before the woocommerce template functions are included
 		add_action( 'init', array( $this, 'include_template_functions' ), 20 );
+		
+		// Ajax endpoints for Storing question form submissions
+		add_action( 'wp_ajax_' . WCPSQ_SLUG . '_psq_submissions', array( $this, 'psq_form_submit' ) );		
+		add_action( 'wp_ajax_nopriv_' . WCPSQ_SLUG . '_psq_submissions', array( $this, 'psq_form_submit' ) );		
 
-	}
-
-	/**
-	 * Take care of anything that needs woocommerce to be loaded.
-	 * For instance, if you need access to the $woocommerce global
-	 */
-	public function woocommerce_loaded() {
-		// ...
-	}
-
-	/**
-	 * Take care of anything that needs all plugins to be loaded
-	 */
-	public function plugins_loaded() {
-		// ...
 	}
 
 	/**
@@ -78,6 +59,13 @@ class WcPreSalesQuestions {
 	 */
 	public function include_template_functions() {
 		//include( 'woocommerce-template.php' );
+	}
+	
+	/**
+	 * Handle Ajax requests for Pre-Sales questions form submissions 
+	 */
+	public function psq_form_submit() {
+		check_ajax_referer( WCPSQ_SLUG . '-nonce-psq-form', 'nonce' );
 	}
 
 	/**
@@ -131,7 +119,10 @@ class WcPreSalesQuestions {
 	 * Render the Pre-Sales questions form
 	 */
 	function wc_psq_render_form() {
-		require( WCPSQ_DIR_PATH . 'views/wc_psq_tab_form.php' );
+		$formdata = array(
+			'nonce' => wp_create_nonce( WCPSQ_SLUG . '-nonce-psq-form' )
+		);
+		require( WCPSQ_DIR_PATH . 'views/wc_psq_form.php' );
 	}
 	
 	/**
@@ -147,7 +138,7 @@ class WcPreSalesQuestions {
 		}
 		
 		// get the settings
-		$settings = get_option( WCPSQ_SLUG );
+		$settings = $this->settings->getSettings();
 		
 		// check if it is the product page
 		if ( 'tab' == $area || 'summary' == $area ) {
@@ -179,15 +170,15 @@ class WcPreSalesQuestions {
 		} else if ( 'cart' == $area  || 'checkout' == $area ) {
 			
 			// return true if setting 'show_on_cart_checkout' is not available and area is cart
-			if ( empty( $setting['_socc'] ) && 'cart' == $area ) {
+			if ( empty( $settings['_socc'] ) && 'cart' == $area ) {
 				return true;
 			}
 			
 			// check if the setting 'show_on_cart_checkout' is not empty
-			if ( ! empty( $setting['_socc'] ) ) {
+			if ( ! empty( $settings['_socc'] ) ) {
 				
 				// get the areas from setting
-				$areas_from_setting = explode( '::', $setting['_socc'] );
+				$areas_from_setting = explode( '::', $settings['_socc'] );
 				
 				// check if passed area exists in the setting
 				if ( in_array( $area, $areas_from_setting ) ) {

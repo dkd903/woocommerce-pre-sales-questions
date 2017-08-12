@@ -10,8 +10,8 @@
 		$(document).on( 'click', '.<?php echo WCPSQ_SLUG; ?>-notice-welcome button.notice-dismiss', function( event ) {
 			event.preventDefault();
 			$.post( '<?php echo esc_url( $ajax_url ); ?>', {
-				action: '<?php echo WCPSQ_SLUG . '_dismiss_dashboard_notices'; ?>',
-				nonce: '<?php echo wp_create_nonce( WCPSQ_SLUG . '-nonce' ); ?>'
+				action: '<?php echo WCPSQ_SLUG . "_dismiss_dashboard_notices"; ?>',
+				nonce: '<?php echo wp_create_nonce( WCPSQ_SLUG . "-nonce" ); ?>'
 			});
 			$('.<?php echo WCPSQ_SLUG; ?>-notice-welcome').remove();
 		});

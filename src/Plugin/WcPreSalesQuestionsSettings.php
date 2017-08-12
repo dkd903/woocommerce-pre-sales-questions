@@ -13,7 +13,7 @@ class WcPreSalesQuestionsSettings {
 	// TODO:you should add this exit intent to your pricing page as well
 	// choose your pricing page
 
-	public $extensions;
+	public $settings;
 
 	/**
 	 * Constructor
@@ -21,16 +21,26 @@ class WcPreSalesQuestionsSettings {
 	 * @return   none
 	 */
 	function __construct( $extensions = array() ) {
-		if ( !empty( $extensions ) ) {
-			$this->extensions = $extensions;
-		}
 		$this->init();
 	}
+	
+	/**
+	 * Getters and setters for settings
+	 */
+	 function getSettings() {
+	 	return $this->settings;
+	 } 
+	 
+	 function setSettings( $options ) {
+	 	$this->settings = $options;
+	 } 	 
 
 	/**
 	 * Add the necessary hooks and filters for admin
 	 */
 	function init() {
+		
+		$this->setSettings( get_option( WCPSQ_SLUG ) );
 
 		// admin notices
 		add_action( 'admin_notices', array( $this, 'dashboard_notices' ) );
@@ -39,7 +49,7 @@ class WcPreSalesQuestionsSettings {
 		add_action( 'wp_ajax_' . WCPSQ_SLUG . '_dismiss_dashboard_notices', array( $this, 'dismiss_dashboard_notices' ) );
 
 		// Add settings link in plugin list
-		add_filter( 'plugin_action_links_' . plugin_basename( WCPSQ_PATH ), array( $this, 'settings_link' ) );
+		add_filter( 'plugin_action_links_' . plugin_basename( WCPSQ_DIR ), array( $this, 'settings_link' ) );
 
 		// settings page
 		add_action( 'admin_menu', array( $this, 'menu' ) );
@@ -95,8 +105,8 @@ class WcPreSalesQuestionsSettings {
 			}
 		}
 
-		// get the settings
-		$settings = get_option( WCPSQ_SLUG );
+		// set the settings
+		$this->setSettings( get_option( WCPSQ_SLUG ) );
 
 		$all_posts = array();
 		// get the posts and pages
