@@ -26,13 +26,13 @@ if ( in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', g
 	define( 'WCPSQ_DIR_PATH', plugin_dir_path( __FILE__ ) );
 	define( 'WCPSQ_DIR_URL', plugin_dir_url( __FILE__ ) );
 	define( 'WCPSQ_PLUGIN_NAME_BASE' , 'Pre-Sales Questions' );
-	define(	'WCPSQ_PLUGIN_NAME', 'WooCommerce ' . WCPSQ_PLUGIN_NAME_BASE );
-	define( 'WCPSQ_SLUG' , 'wcpsq1' );
-	define( 'WCPSQ_DOMAIN', 'wcpsq1' );
+	define(	'WCPSQ_PLUGIN_NAME', WCPSQ_PLUGIN_NAME_BASE . ' for WooCommerce' );
+	define( 'WCPSQ_SLUG' , 'wcpsq' );
+	define( 'WCPSQ_DOMAIN', 'wcpsq' );
 	define( 'WCPSQ_VERSION' , '1.0.1' );
 
 	// Localization
-	load_plugin_textdomain( WCPSQ_DOMAIN, false, WCPSQ_DIR . '/languages' );
+	load_plugin_textdomain( 'wcpsq', false, WCPSQ_DIR . '/languages' );
 
 	// finally instantiate our plugin class and add it to the set of globals
 	$GLOBALS['wc_pre_sales_questions'] = new WcPreSalesQuestions();

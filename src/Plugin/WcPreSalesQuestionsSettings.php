@@ -23,24 +23,27 @@ class WcPreSalesQuestionsSettings {
 	function __construct( $extensions = array() ) {
 		$this->init();
 	}
-	
+
 	/**
 	 * Getters and setters for settings
 	 */
 	 function getSettings() {
 	 	return $this->settings;
-	 } 
-	 
+	 }
+
 	 function setSettings( $options ) {
 	 	$this->settings = $options;
-	 } 	 
+	 }
 
 	/**
 	 * Add the necessary hooks and filters for admin
 	 */
 	function init() {
-		
+
 		$this->setSettings( get_option( WCPSQ_SLUG ) );
+
+		// register the responses CPT
+		add_action( 'init', array( $this, 'register_cpt' ) );
 
 		// admin notices
 		add_action( 'admin_notices', array( $this, 'dashboard_notices' ) );
@@ -53,9 +56,9 @@ class WcPreSalesQuestionsSettings {
 
 		// settings page
 		add_action( 'admin_menu', array( $this, 'menu' ) );
-		
+
 		// enqueue styles
-		add_action( 'admin_enqueue_scripts', array( $this, 'custom_admin_style' ) );		
+		add_action( 'admin_enqueue_scripts', array( $this, 'custom_admin_style' ) );
 	}
 
 	/**
@@ -64,21 +67,88 @@ class WcPreSalesQuestionsSettings {
 	function custom_admin_style() {
         wp_enqueue_style( WCPSQ_SLUG . '_admin', WCPSQ_DIR_URL . 'assets/css/admin-style.css', array(), WCPSQ_VERSION );
 	}
-	
+
 	/**
-	 * Add the options page
+	 * Register the CPT needed for saving the responses from the Pre-Sales questions form
+	 */
+	function register_cpt() {
+	    $args = array(
+			'labels'              => array(
+					'name'                  => __( 'Questions asked by visitors', 'wcpsq' ),
+					'singular_name'         => _x( 'Question', 'wcpsq_questions post type singular name', 'wcpsq' ),
+					'add_new'               => __( 'Add question', 'wcpsq' ),
+					'add_new_item'          => __( 'Add new question', 'wcpsq' ),
+					'edit'                  => __( 'Edit', 'wcpsq' ),
+					'edit_item'             => __( 'Edit question', 'wcpsq' ),
+					'new_item'              => __( 'New question', 'wcpsq' ),
+					'view'                  => __( 'View question', 'wcpsq' ),
+					'view_item'             => __( 'View question', 'wcpsq' ),
+					'search_items'          => __( 'Search questions', 'wcpsq' ),
+					'not_found'             => __( 'No questions found', 'wcpsq' ),
+					'not_found_in_trash'    => __( 'No questions found in trash', 'wcpsq' ),
+					'parent'                => __( 'Parent questions', 'wcpsq' ),
+					'menu_name'             => _x( 'Question', 'Admin menu name', 'wcpsq' ),
+					'filter_items_list'     => __( 'Filter questions', 'wcpsq' ),
+					'items_list_navigation' => __( 'Questions navigation', 'wcpsq' ),
+					'items_list'            => __( 'Questions list', 'wcpsq' ),
+				),
+			'description'         => __( 'This is where Pre-Sales questions are stored.', 'wcpsq' ),
+			'public'              => false,
+			'show_ui'             => true,
+			'capability_type'     => 'post',
+  			'capabilities' 		  => array(
+    									'create_posts' => 'do_not_allow', // false < WP 4.5
+  									 ),
+  			'map_meta_cap' 		  => true, // Set to `false`, if users are not allowed to edit/delete existing posts
+  			'publicly_queryable'  => false,
+			'exclude_from_search' => true,
+			// 'show_in_menu'        => current_user_can( 'manage_woocommerce' ) ? WCPSQ_SLUG : false,
+			'show_in_menu'        => false,
+			'hierarchical'        => false,
+			'show_in_nav_menus'   => false,
+			'rewrite'             => false,
+			'query_var'           => false,
+			'supports'            => array( 'title', 'comments', 'custom-fields' ),
+			'has_archive'         => false,
+		);
+
+	    register_post_type( WCPSQ_SLUG . '_questions', $args );
+	}
+
+	/**
+	 * Add the menu pages
 	 */
 	function menu() {
-		add_submenu_page( 
-			'woocommerce', 
-			WCPSQ_PLUGIN_NAME_BASE, 
-			WCPSQ_PLUGIN_NAME_BASE, 
-			'manage_options', 
-			WCPSQ_SLUG, 
+
+		add_menu_page(
+			WCPSQ_PLUGIN_NAME,
+			WCPSQ_PLUGIN_NAME_BASE,
+			'manage_options',
+			WCPSQ_SLUG,
 			array(
 				$this,
 				'settings_page'
-			) 
+			),
+			'dashicons-image-filter'
+		);
+
+		add_submenu_page(
+			WCPSQ_SLUG,
+			__( 'Settings', 'wcpsq' ),
+			__( 'Settings', 'wcpsq' ),
+			'manage_options',
+			WCPSQ_SLUG
+		);
+
+		/**
+		 * Another way to add the Entries / Questions CPT to the Pre-Sales Questions menu
+		 */
+		add_submenu_page(
+			WCPSQ_SLUG,
+			__( 'Questions', 'wcpsq' ),
+			__( 'Questions', 'wcpsq' ),
+			'manage_options',
+			'/edit.php?post_type=wcpsq_questions'
 		);
 	}
 
@@ -113,7 +183,7 @@ class WcPreSalesQuestionsSettings {
 		$posts = get_posts( array( 'numberposts' => -1, 'post_status' => 'publish', 'post_type' => 'page' ) );
 		foreach( $posts as $post ) {
 			if ( 'checkout' == strtolower( $post->post_title ) || 'cart' == strtolower( $post->post_title ) ) {
-				continue;	
+				continue;
 			}
 			// if ( $post->content ) contains [woocommerce_cart] or [woocommerce_checkout]
 			$all_posts[$post->ID] = $post->post_title;
